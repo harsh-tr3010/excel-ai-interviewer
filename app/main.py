@@ -1,10 +1,6 @@
 from fastapi import FastAPI
-from app.api import routes
+from app.core.config import settings
+from app.api.routes import router
 
-app = FastAPI(title="AI Excel Mock Interviewer")
-
-app.include_router(routes.router)
-
-@app.get("/")
-def root():
-    return {"message": "AI-Powered Excel Mock Interviewer is running 🚀"}
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
+app.include_router(router)

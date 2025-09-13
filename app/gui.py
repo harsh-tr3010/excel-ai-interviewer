@@ -1,35 +1,45 @@
 import gradio as gr
 from app.services.interviewer import ExcelInterviewAgent
+from PIL import Image
 
+# Initialize the interview agent
 agent = ExcelInterviewAgent()
 
-interviewer_name = "Priya (AI Excel Interviewer)"
-interviewer_avatar = "app/static/interviewer.png"
+# Load avatar image
+avatar_path = "app/static/interviewer.png"
+avatar_img = Image.open(avatar_path).resize((150, 150))
 
-def chat(user_input, history):
-    if not history:
-        bot_msg = agent.get_next()
+# Function to get next question
+def ask_question():
+    q = agent.get_next_question()
+    if q:
+        return avatar_img, q, ""
     else:
-        bot_msg = agent.get_next(user_input)
-    return history + [(user_input, bot_msg)], history + [(user_input, bot_msg)]
+        return avatar_img, "Interview finished!", ""
 
+# Function to submit answer and get feedback
+def submit_answer(answer):
+    result = agent.evaluate_answer(answer)
+    return avatar_img, agent.current_question["Question"], f"Score: {result['score']} | {result['feedback']}"
+
+# Gradio interface
 with gr.Blocks() as demo:
-    gr.Markdown(f"## 👩‍💼 {interviewer_name}")
-    gr.Image(interviewer_avatar, label="Your Interviewer", type="filepath", elem_id="avatar")
+    gr.Markdown("## 🤖 AI Excel Mock Interviewer")
 
-    chatbot = gr.Chatbot(label="Interview Transcript")
-    msg = gr.Textbox(label="Your Answer:")
-    clear = gr.Button("Clear Chat")
+    with gr.Row():
+        avatar = gr.Image(avatar_img, elem_id="avatar", interactive=False)
+        question_label = gr.Textbox(label="Question", value="Click 'Next Question' to start", interactive=False)
+    
+    answer_input = gr.Textbox(label="Your Answer")
+    
+    with gr.Row():
+        next_btn = gr.Button("Next Question")
+        submit_btn = gr.Button("Submit Answer")
+    
+    feedback_label = gr.Textbox(label="Feedback", interactive=False)
+    
+    next_btn.click(fn=ask_question, outputs=[avatar, question_label, feedback_label])
+    submit_btn.click(fn=submit_answer, inputs=[answer_input], outputs=[avatar, question_label, feedback_label])
 
-    cam = gr.Video(label="Candidate Camera Feed", source="webcam", streaming=True)
-
-    state = gr.State([])
-
-    def respond(message, history):
-        reply, updated_history = chat(message, history)
-        return updated_history, updated_history
-
-    msg.submit(respond, [msg, state], [chatbot, state])
-    clear.click(lambda: None, None, chatbot, queue=False)
-
-demo.launch(server_name="0.0.0.0", server_port=7860)
+# Launch Gradio app
+demo.launch()

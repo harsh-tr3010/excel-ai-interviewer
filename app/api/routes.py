@@ -4,14 +4,11 @@ from app.services.interviewer import ExcelInterviewAgent
 router = APIRouter()
 agent = ExcelInterviewAgent()
 
-@router.get("/start")
-def start_interview():
-    return {"message": agent.get_next()}
+@router.get("/question")
+def get_question():
+    q = agent.get_next_question()
+    return {"question": q}
 
 @router.post("/answer")
-def answer_interview(answer: str):
-    return {"message": agent.get_next(answer)}
-
-@router.get("/summary")
-def get_summary():
-    return {"feedback": agent.get_next()}
+def post_answer(answer: str):
+    return agent.evaluate_answer(answer)

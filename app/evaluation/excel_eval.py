@@ -1,17 +1,13 @@
-def parse_feedback(raw_feedback: str):
-    """Convert LLM feedback into structured dictionary (basic PoC)"""
-    feedback = {"scores": {}, "strengths": [], "improvements": []}
+import difflib
 
-    for line in raw_feedback.splitlines():
-        if "Score" in line:
-            try:
-                q, score = line.split(":", 1)
-                feedback["scores"][q.strip()] = score.strip()
-            except:
-                continue
-        elif "Strength" in line:
-            feedback["strengths"].append(line.strip())
-        elif "Improve" in line:
-            feedback["improvements"].append(line.strip())
-
-    return feedback
+class ExcelEvaluator:
+    def evaluate(self, answer: str, expected: str) -> dict:
+        """
+        Simple similarity check between candidate answer and expected answer.
+        """
+        ratio = difflib.SequenceMatcher(None, answer.lower(), expected.lower()).ratio()
+        feedback = "Good understanding" if ratio > 0.7 else "Needs improvement"
+        return {
+            "score": round(ratio * 100, 2),
+            "feedback": feedback
+        }
