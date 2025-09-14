@@ -1,108 +1,72 @@
 import gradio as gr
 from app.services.interviewer import ExcelInterviewAgent
 from PIL import Image
-import os
-from datetime import datetime
-import shutil
-import csv
 
-# Initialize interviewer
-agent = ExcelInterviewAgent()
+agent = ExcelInterviewAgent(max_questions=20)
 
-# Avatar
 avatar_path = "app/static/interviewer.png"
 avatar_img = Image.open(avatar_path).resize((150, 150))
 
-# Directories
-recordings_dir = "recordings"
-results_dir = "results"
-os.makedirs(recordings_dir, exist_ok=True)
-os.makedirs(results_dir, exist_ok=True)
+candidate_name = None
+candidate_email = None
 
-results_file = os.path.join(results_dir, "interview_results.csv")
+def start_interview(name, email):
+    global candidate_name, candidate_email
+    candidate_name, candidate_email = name, email
+    q = agent.next_question()
+    answer = agent.get_current_answer()
+    return avatar_img, q, answer, ""
 
-# Create results file with header if not exists
-if not os.path.exists(results_file):
-    with open(results_file, mode="w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["Candidate Name", "Timestamp", "Question", "Answer", "Score", "Feedback", "Video Path", "Summary"])
+def submit_answer(answer):
+    next_q = agent.next_question(answer)
+    current_answer = agent.get_current_answer()
+    feedback = ""
+    if next_q is None:
+        feedback = agent.generate_summary(candidate_name, candidate_email)
+        next_q = "✅ Test Completed!"
+    return avatar_img, next_q, current_answer, feedback
 
-# Greeting
-intro_text = "👋 Hello Candidate! Welcome to your AI Excel Interview.\n\nEnter your name below and press **Start Test**. Recording will begin automatically and continue until the last question."
+def prev_question():
+    prev_q = agent.prev_question()
+    current_answer = agent.get_current_answer()
+    feedback = ""
+    if prev_q is None:
+        prev_q = "This is the first question."
+    return avatar_img, prev_q, current_answer, feedback
 
-# --- Logic functions ---
+def submit_test():
+    summary = agent.generate_summary(candidate_name, candidate_email)
+    status = "✅ Test Submitted" if len(agent.answers) >= agent.max_questions else "Test not completed yet"
+    return avatar_img, status, "", summary
 
-def start_test(name):
-    """Start the interview and begin recording"""
-    if not name.strip():
-        return avatar_img, "⚠️ Please enter your name before starting.", "Enter your name first.", gr.update(visible=True)
-
-    agent.reset()
-    q = agent.get_next_question()
-    return avatar_img, q, f"Recording started for {name}. Please answer the questions one by one.", gr.update(visible=True)
-
-
-def submit_answer(name, answer, video_file):
-    """Process each answer and move to next question"""
-    result = agent.evaluate_answer(answer)
-    q = agent.get_next_question()
-
-    if q:
-        feedback = f"Score: {result['score']} | {result['feedback']}"
-
-        # Log each Q/A immediately
-        with open(results_file, mode="a", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([name, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), agent.questions[agent.current_index-1], answer, result["score"], result["feedback"], "", ""])
-
-        return avatar_img, q, feedback, None
-    else:
-        # End of interview → stop & save video automatically
-        summary = agent.generate_summary()
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        safe_name = name.replace(" ", "_") if name else "candidate"
-        save_path = os.path.join(recordings_dir, f"{safe_name}_{ts}_interview_session.webm")
-
-        if video_file and os.path.exists(video_file):
-            shutil.move(video_file, save_path)
-            save_status = f"✅ Interview finished for {name}!\n📂 Recording saved at {save_path}"
-        else:
-            save_status = f"⚠️ Interview finished for {name}, but no recording file received."
-            save_path = "N/A"
-
-        # Save final summary row in CSV
-        with open(results_file, mode="a", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([name, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "END", "N/A", "N/A", "N/A", save_path, summary])
-
-        return avatar_img, "✅ Interview finished!", summary, save_status
-
-
-# --- Gradio UI ---
 with gr.Blocks() as demo:
     gr.Markdown("## 🤖 AI Excel Mock Interviewer")
-    gr.Markdown(intro_text)
 
-    candidate_name = gr.Textbox(label="Candidate Name", placeholder="Enter your full name")
+    with gr.Row():
+        name_box = gr.Textbox(label="Full Name", placeholder="Enter your name")
+        email_box = gr.Textbox(label="Email", placeholder="Enter your email")
+
+    start_btn = gr.Button("🎬 Start Test (20 Questions)")
 
     with gr.Row():
         avatar = gr.Image(avatar_img, interactive=False)
-        question_label = gr.Textbox(label="Question", value="Press Start to begin interview", interactive=False)
-
-    answer_input = gr.Textbox(label="Your Answer")
-
-    # Continuous recording input (video + audio together)
-    video_input = gr.Video(label="Recording (continuous)", source="webcam")
+        question_label = gr.Textbox(label="Question", value="Fill name & email, then click Start Test.", interactive=False)
+        answer_input = gr.Textbox(label="Your Answer")
 
     with gr.Row():
-        start_btn = gr.Button("▶️ Start Test")
+        prev_btn = gr.Button("Previous Question")
         submit_btn = gr.Button("Submit Answer")
+        submit_test_btn = gr.Button("Submit Test")
 
     feedback_label = gr.Textbox(label="Feedback / Summary", interactive=False)
-    save_status = gr.Textbox(label="Save Status", interactive=False)
 
-    # Events
-    start_btn.click(fn=start_test, inputs=[candidate_name], outputs=[avatar, question_label, feedback_label, video_input])
-    submit_btn.click(fn=submit_answer, inputs=[candidate_name, answer_input, video_input], outputs=[avatar, question_label, feedback_label, save_status])
+    start_btn.click(fn=start_interview, inputs=[name_box, email_box],
+                    outputs=[avatar, question_label, answer_input, feedback_label])
+    submit_btn.click(fn=submit_answer, inputs=[answer_input],
+                     outputs=[avatar, question_label, answer_input, feedback_label])
+    prev_btn.click(fn=prev_question, inputs=[],
+                   outputs=[avatar, question_label, answer_input, feedback_label])
+    submit_test_btn.click(fn=submit_test, inputs=[],
+                          outputs=[avatar, question_label, answer_input, feedback_label])
 
 demo.launch()
