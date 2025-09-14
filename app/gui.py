@@ -4,6 +4,7 @@ from PIL import Image
 import os
 from datetime import datetime
 import shutil
+import csv
 
 # Initialize interviewer
 agent = ExcelInterviewAgent()
@@ -12,9 +13,19 @@ agent = ExcelInterviewAgent()
 avatar_path = "app/static/interviewer.png"
 avatar_img = Image.open(avatar_path).resize((150, 150))
 
-# Recordings directory
+# Directories
 recordings_dir = "recordings"
+results_dir = "results"
 os.makedirs(recordings_dir, exist_ok=True)
+os.makedirs(results_dir, exist_ok=True)
+
+results_file = os.path.join(results_dir, "interview_results.csv")
+
+# Create results file with header if not exists
+if not os.path.exists(results_file):
+    with open(results_file, mode="w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["Candidate Name", "Timestamp", "Question", "Answer", "Score", "Feedback", "Video Path", "Summary"])
 
 # Greeting
 intro_text = "👋 Hello Candidate! Welcome to your AI Excel Interview.\n\nEnter your name below and press **Start Test**. Recording will begin automatically and continue until the last question."
@@ -38,6 +49,12 @@ def submit_answer(name, answer, video_file):
 
     if q:
         feedback = f"Score: {result['score']} | {result['feedback']}"
+
+        # Log each Q/A immediately
+        with open(results_file, mode="a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([name, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), agent.questions[agent.current_index-1], answer, result["score"], result["feedback"], "", ""])
+
         return avatar_img, q, feedback, None
     else:
         # End of interview → stop & save video automatically
@@ -51,8 +68,15 @@ def submit_answer(name, answer, video_file):
             save_status = f"✅ Interview finished for {name}!\n📂 Recording saved at {save_path}"
         else:
             save_status = f"⚠️ Interview finished for {name}, but no recording file received."
+            save_path = "N/A"
+
+        # Save final summary row in CSV
+        with open(results_file, mode="a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([name, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "END", "N/A", "N/A", "N/A", save_path, summary])
 
         return avatar_img, "✅ Interview finished!", summary, save_status
+
 
 # --- Gradio UI ---
 with gr.Blocks() as demo:
