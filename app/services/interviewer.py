@@ -8,6 +8,7 @@ class ExcelInterviewAgent:
         self.current_question = None
         self.evaluator = ExcelEvaluator()
         self.asked = []
+        self.answers = []  # store user answers
 
     def get_next_question(self):
         available = self.questions[~self.questions.index.isin(self.asked)]
@@ -22,4 +23,22 @@ class ExcelInterviewAgent:
         if self.current_question is None:
             return {"error": "No active question"}
         expected = self.current_question["ExpectedAnswer"]
-        return self.evaluator.evaluate(answer, str(expected))
+        result = self.evaluator.evaluate(answer, str(expected))
+        # Store answer and feedback
+        self.answers.append({
+            "question": self.current_question["Question"],
+            "user_answer": answer,
+            "score": result["score"],
+            "feedback": result["feedback"]
+        })
+        return result
+
+    def generate_summary(self):
+        if not self.answers:
+            return "No answers recorded."
+        total_score = sum(a["score"] for a in self.answers)
+        avg_score = round(total_score / len(self.answers), 2)
+        summary = f"Interview Summary:\nTotal Questions: {len(self.answers)}\nAverage Score: {avg_score}\n\nDetails:\n"
+        for a in self.answers:
+            summary += f"Q: {a['question']}\nYour Answer: {a['user_answer']}\nScore: {a['score']} | {a['feedback']}\n\n"
+        return summary
