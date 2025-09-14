@@ -3,6 +3,7 @@ from app.services.interviewer import ExcelInterviewAgent
 from PIL import Image
 import os
 from datetime import datetime
+import shutil
 
 # Initialize interviewer
 agent = ExcelInterviewAgent()
@@ -16,7 +17,7 @@ recordings_dir = "recordings"
 os.makedirs(recordings_dir, exist_ok=True)
 
 # Greeting
-intro_text = "👋 Hello Candidate! Welcome to your AI Excel Interview.\n\nOnce you press **Start Test**, recording will begin automatically and continue until the test ends."
+intro_text = "👋 Hello Candidate! Welcome to your AI Excel Interview.\n\nOnce you press **Start Test**, recording will begin automatically and continue until the last question."
 
 # --- Logic functions ---
 
@@ -26,28 +27,27 @@ def start_test():
     q = agent.get_next_question()
     return avatar_img, q, "Recording started. Please answer the questions one by one.", gr.update(visible=True)
 
-def submit_answer(answer):
+def submit_answer(answer, video_file):
     """Process each answer and move to next question"""
     result = agent.evaluate_answer(answer)
     q = agent.get_next_question()
 
     if q:
         feedback = f"Score: {result['score']} | {result['feedback']}"
-        return avatar_img, q, feedback
+        return avatar_img, q, feedback, None
     else:
+        # End of interview → stop & save video automatically
         summary = agent.generate_summary()
-        return avatar_img, "✅ Interview finished!", summary
-
-def stop_test(video_file):
-    """Save the recorded video file"""
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    if video_file:
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         save_path = os.path.join(recordings_dir, f"{ts}_interview_session.webm")
-        os.rename(video_file, save_path)
-        return f"📂 Recording saved at {save_path}"
-    else:
-        return "⚠️ No recording file received!"
+
+        if video_file and os.path.exists(video_file):
+            shutil.move(video_file, save_path)
+            save_status = f"✅ Interview finished!\n📂 Recording saved at {save_path}"
+        else:
+            save_status = "⚠️ Interview finished, but no recording file received."
+
+        return avatar_img, "✅ Interview finished!", summary, save_status
 
 # --- Gradio UI ---
 with gr.Blocks() as demo:
@@ -66,14 +66,12 @@ with gr.Blocks() as demo:
     with gr.Row():
         start_btn = gr.Button("▶️ Start Test")
         submit_btn = gr.Button("Submit Answer")
-        stop_btn = gr.Button("⏹ Stop & Save Recording")
 
     feedback_label = gr.Textbox(label="Feedback / Summary", interactive=False)
     save_status = gr.Textbox(label="Save Status", interactive=False)
 
     # Events
     start_btn.click(fn=start_test, inputs=[], outputs=[avatar, question_label, feedback_label, video_input])
-    submit_btn.click(fn=submit_answer, inputs=[answer_input], outputs=[avatar, question_label, feedback_label])
-    stop_btn.click(fn=stop_test, inputs=[video_input], outputs=[save_status])
+    submit_btn.click(fn=submit_answer, inputs=[answer_input, video_input], outputs=[avatar, question_label, feedback_label, save_status])
 
 demo.launch()
