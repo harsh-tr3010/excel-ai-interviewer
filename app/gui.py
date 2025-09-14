@@ -17,17 +17,21 @@ recordings_dir = "recordings"
 os.makedirs(recordings_dir, exist_ok=True)
 
 # Greeting
-intro_text = "👋 Hello Candidate! Welcome to your AI Excel Interview.\n\nOnce you press **Start Test**, recording will begin automatically and continue until the last question."
+intro_text = "👋 Hello Candidate! Welcome to your AI Excel Interview.\n\nEnter your name below and press **Start Test**. Recording will begin automatically and continue until the last question."
 
 # --- Logic functions ---
 
-def start_test():
+def start_test(name):
     """Start the interview and begin recording"""
+    if not name.strip():
+        return avatar_img, "⚠️ Please enter your name before starting.", "Enter your name first.", gr.update(visible=True)
+
     agent.reset()
     q = agent.get_next_question()
-    return avatar_img, q, "Recording started. Please answer the questions one by one.", gr.update(visible=True)
+    return avatar_img, q, f"Recording started for {name}. Please answer the questions one by one.", gr.update(visible=True)
 
-def submit_answer(answer, video_file):
+
+def submit_answer(name, answer, video_file):
     """Process each answer and move to next question"""
     result = agent.evaluate_answer(answer)
     q = agent.get_next_question()
@@ -39,13 +43,14 @@ def submit_answer(answer, video_file):
         # End of interview → stop & save video automatically
         summary = agent.generate_summary()
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        save_path = os.path.join(recordings_dir, f"{ts}_interview_session.webm")
+        safe_name = name.replace(" ", "_") if name else "candidate"
+        save_path = os.path.join(recordings_dir, f"{safe_name}_{ts}_interview_session.webm")
 
         if video_file and os.path.exists(video_file):
             shutil.move(video_file, save_path)
-            save_status = f"✅ Interview finished!\n📂 Recording saved at {save_path}"
+            save_status = f"✅ Interview finished for {name}!\n📂 Recording saved at {save_path}"
         else:
-            save_status = "⚠️ Interview finished, but no recording file received."
+            save_status = f"⚠️ Interview finished for {name}, but no recording file received."
 
         return avatar_img, "✅ Interview finished!", summary, save_status
 
@@ -53,6 +58,8 @@ def submit_answer(answer, video_file):
 with gr.Blocks() as demo:
     gr.Markdown("## 🤖 AI Excel Mock Interviewer")
     gr.Markdown(intro_text)
+
+    candidate_name = gr.Textbox(label="Candidate Name", placeholder="Enter your full name")
 
     with gr.Row():
         avatar = gr.Image(avatar_img, interactive=False)
@@ -71,7 +78,7 @@ with gr.Blocks() as demo:
     save_status = gr.Textbox(label="Save Status", interactive=False)
 
     # Events
-    start_btn.click(fn=start_test, inputs=[], outputs=[avatar, question_label, feedback_label, video_input])
-    submit_btn.click(fn=submit_answer, inputs=[answer_input, video_input], outputs=[avatar, question_label, feedback_label, save_status])
+    start_btn.click(fn=start_test, inputs=[candidate_name], outputs=[avatar, question_label, feedback_label, video_input])
+    submit_btn.click(fn=submit_answer, inputs=[candidate_name, answer_input, video_input], outputs=[avatar, question_label, feedback_label, save_status])
 
 demo.launch()
