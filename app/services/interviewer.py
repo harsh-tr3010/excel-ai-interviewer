@@ -86,6 +86,14 @@ class ExcelInterviewAgent:
     def save_results_to_csv(self, candidate_name=None, candidate_email=None):
         os.makedirs("results", exist_ok=True)
 
+        # ------------------ Check for duplicate email ------------------
+        master_file = "results/all_results.csv"
+        if os.path.exists(master_file):
+            master_df = pd.read_csv(master_file)
+            if candidate_email in master_df["candidate_email"].values:
+                # Reject saving if email already exists
+                raise ValueError(f"Email '{candidate_email}' already exists! Cannot save results.")
+
         # Calculate final result
         total_correct = sum(a["score"] for a in self.answers)
         result_status = "PASS" if total_correct >= 15 else "FAIL"
@@ -100,7 +108,6 @@ class ExcelInterviewAgent:
         df.to_csv(filename, index=False)
 
         # Append to master file
-        master_file = "results/all_results.csv"
         if os.path.exists(master_file):
             df.to_csv(master_file, mode="a", header=False, index=False)
         else:

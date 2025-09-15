@@ -1,5 +1,2 @@
 question,user_answer,expected,score,feedback,candidate_name,candidate_email,total_correct,final_result
-What formula concatenates text from multiple cells?,aihxiuhbX,CONCAT or CONCATENATE,0,Wrong. Correct answer: CONCAT or CONCATENATE,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What shortcut is used to copy selected cells?,aihxiuhbX,Ctrl+C,0,Wrong. Correct answer: Ctrl+C,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What is the shortcut for undo?,aihxiuhbX,Ctrl+Z,0,Wrong. Correct answer: Ctrl+Z,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-How do you create a chart in Excel?,aihxiuhbX,Insert > Chart,0,Wrong. Correct answer: Insert > Chart,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+What is the shortcut to find data in Excel?,ctrl+f,Ctrl+F,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,1,FAIL

@@ -10,3 +10,8 @@ What formula concatenates text from multiple cells?,aihxiuhbX,CONCAT or CONCATEN
 What shortcut is used to copy selected cells?,aihxiuhbX,Ctrl+C,0,Wrong. Correct answer: Ctrl+C,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
 What is the shortcut for undo?,aihxiuhbX,Ctrl+Z,0,Wrong. Correct answer: Ctrl+Z,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
 How do you create a chart in Excel?,aihxiuhbX,Insert > Chart,0,Wrong. Correct answer: Insert > Chart,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+Which function rounds a number to the nearest integer?,aihxiuhbX,ROUND,0,Wrong. Correct answer: ROUND,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+How do you freeze the top row in Excel?,aihxiuhbX,View > Freeze Panes > Freeze Top Row,0,Wrong. Correct answer: View > Freeze Panes > Freeze Top Row,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+What shortcut is used to copy selected cells?,ctrl+c,Ctrl+C,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,2,FAIL
+What is the shortcut for undo?,ctrl+z,Ctrl+Z,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,2,FAIL
+What is the shortcut to find data in Excel?,ctrl+f,Ctrl+F,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,1,FAIL
