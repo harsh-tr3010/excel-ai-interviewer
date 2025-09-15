@@ -4,30 +4,26 @@ from PIL import Image
 import os, time, shutil
 import pandas as pd
 
-# Initialize agent
+# ------------------ Initialization ------------------
 agent = ExcelInterviewAgent(max_questions=20)
 
-# Avatar
 avatar_path = "app/static/interviewer.png"
 avatar_img = Image.open(avatar_path).resize((250, 250))
 
-# Candidate session
 candidate_name = None
 candidate_email = None
 test_started = False
 start_time = None
 TIME_LIMIT = 300  # 5 minutes
 
-# Intro
+os.makedirs("recordings", exist_ok=True)
+
 intro_text = """👋 Hello! I am your AI Excel Interviewer.  
 The test has **20 questions**, **5 minutes limit**, and **surveillance enabled**.  
 📢 **You must also spell out your answer aloud while typing it.**  
 """
 
-# Create recordings folder
-os.makedirs("recordings", exist_ok=True)
-
-# --- Utility ---
+# ------------------ Utility ------------------
 def email_exists(email):
     master_file = "results/all_results.csv"
     if os.path.exists(master_file):
@@ -38,24 +34,7 @@ def email_exists(email):
             return False
     return False
 
-# --- Save recordings ---
-def save_mic_recording(audio_file):
-    if audio_file and candidate_email:
-        ext = os.path.splitext(audio_file)[-1] or ".wav"
-        dest = f"recordings/{candidate_email}_mic_{int(time.time())}{ext}"
-        shutil.copy(audio_file, dest)
-        return dest
-    return None
-
-def save_cam_recording(video_file):
-    if video_file and candidate_email:
-        ext = os.path.splitext(video_file)[-1] or ".mp4"
-        dest = f"recordings/{candidate_email}_cam_{int(time.time())}{ext}"
-        shutil.copy(video_file, dest)
-        return dest
-    return None
-
-# --- Timer ---
+# ------------------ Timer ------------------
 def get_timer_html():
     global test_started
     if not test_started or not start_time:
@@ -64,25 +43,28 @@ def get_timer_html():
     remaining = max(0, TIME_LIMIT - int(elapsed))
     minutes, seconds = divmod(remaining, 60)
     if remaining <= 0 and test_started:
-        submit_test()  # auto-submit
+        submit_test()  # auto-submit test
         return "<b>⏰ Time is up! Test auto-submitted.</b>"
     return f"<b>Timer: {minutes:02d}:{seconds:02d} ⏱</b>"
 
-# --- Interview Logic ---
+# ------------------ Recording Save ------------------
+def save_cam_recording(video_file):
+    if video_file and candidate_email:
+        ext = os.path.splitext(video_file)[-1] or ".mp4"
+        dest = f"recordings/{candidate_email}_cam_{int(time.time())}{ext}"
+        shutil.copy(video_file, dest)
+        return f"📹 Camera saved: {dest}"
+    return "⚠️ No webcam recording."
+
+# ------------------ Interview Logic ------------------
 def start_interview(name, email):
     global candidate_name, candidate_email, test_started, start_time
     if not name or not email:
-        return [avatar_img, "⚠️ Enter full name & email.", "", "", 
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False)]
-    
+        return [avatar_img, "⚠️ Enter full name & email.", "", None] + [gr.update(interactive=False)]*3
+
     if email_exists(email):
-        return [avatar_img, "⚠️ Email already used for test!", "", "", 
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False)]
-    
+        return [avatar_img, "⚠️ Email already used for test!", "", None] + [gr.update(interactive=False)]*3
+
     candidate_name, candidate_email = name, email
     q = agent.start_test()
     test_started = True
@@ -92,46 +74,35 @@ def start_interview(name, email):
         avatar_img,
         f"Welcome {name}! Let's begin.\n\n{q}",
         "",
-        "",
-        gr.update(interactive=True),  # submit
-        gr.update(interactive=True),  # next
-        gr.update(interactive=True),  # submit test
-        gr.update(interactive=True),  # mic
-        gr.update(interactive=True),  # cam
+        None,  # No TTS anymore
+        gr.update(interactive=True),
+        gr.update(interactive=True),
+        gr.update(interactive=True),
+        gr.update(interactive=True),
     ]
 
 def submit_answer(answer):
     if not test_started:
-        return [avatar_img, "⚠️ Test not started.", "", "", 
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False)]
-    
-    elapsed = time.time() - (start_time or 0)
+        return [avatar_img, "⚠️ Test not started.", "", None] + [gr.update(interactive=False)]*3
+
+    elapsed = time.time() - (float(start_time) if start_time else 0)
     if elapsed > TIME_LIMIT:
         summary = finalize_results()
-        return [avatar_img, "⏰ Time up! Auto-submitted.", summary, "", 
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False)]
-    
+        return [avatar_img, "⏰ Time up! Auto-submitted.", summary, None] + [gr.update(interactive=False)]*3
+
     result = agent.evaluate_and_store(answer)
     if "error" in result:
-        return [avatar_img, "⚠️ No active question.", "", "", 
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False), gr.update(interactive=False),
-                gr.update(interactive=False)]
-    
+        return [avatar_img, "⚠️ No active question.", "", None] + [gr.update(interactive=False)]*3
+
     feedback = result['result']['feedback']
     next_q = result.get("next_question")
-    
+
     if next_q:
         return [
             avatar_img,
             next_q,
             feedback,
-            "",
-            gr.update(interactive=True),
+            None,  # No TTS
             gr.update(interactive=True),
             gr.update(interactive=True),
             gr.update(interactive=True),
@@ -143,8 +114,7 @@ def submit_answer(answer):
             avatar_img,
             "✅ Test Completed!",
             summary,
-            "",
-            gr.update(interactive=False),
+            None,
             gr.update(interactive=False),
             gr.update(interactive=False),
             gr.update(interactive=False),
@@ -154,7 +124,7 @@ def submit_answer(answer):
 def next_question(answer):
     return submit_answer(answer)
 
-# --- Finalize and save recordings ---
+# ------------------ Finalize ------------------
 def finalize_results():
     global test_started
     summary = agent.generate_summary(candidate_name, candidate_email)
@@ -163,11 +133,10 @@ def finalize_results():
     total_correct = sum(a["score"] for a in agent.answers)
     result_status = "✅ PASS" if total_correct >= 15 else "❌ FAIL"
     final_summary = f"{summary}\nFinal Result: {result_status} ({total_correct}/20)\n\nSaved: {filename}\nMaster: {master_file}"
-    
-    # Save surveillance
-    save_mic_recording(mic_record.value)
+
+    # Save webcam recording only
     save_cam_recording(cam_record.value)
-    
+
     test_started = False
     return final_summary
 
@@ -177,17 +146,16 @@ def submit_test():
         avatar_img,
         "✅ Test Submitted",
         summary,
-        "",
-        gr.update(interactive=False),
+        None,
         gr.update(interactive=False),
         gr.update(interactive=False),
         gr.update(interactive=False),
         gr.update(interactive=False),
     ]
 
-# --- Build Interface ---
+# ------------------ Build Interface ------------------
 with gr.Blocks() as demo:
-    gr.Markdown("## 🤖 AI Excel Mock Interviewer with Voice & Surveillance")
+    gr.Markdown("## 🤖 AI Excel Mock Interviewer with Webcam Recording")
     gr.Markdown(intro_text)
 
     with gr.Row():
@@ -211,32 +179,32 @@ with gr.Blocks() as demo:
         feedback_label = gr.Textbox(label="Feedback / Summary", interactive=False, lines=10)
         timer_html = gr.HTML("<b>Timer: 00:00 ⏱</b>")
 
-    mic_record = gr.Audio(label="Mic Surveillance", interactive=True)
+    # Webcam only
     cam_record = gr.Video(label="Webcam Surveillance", interactive=True)
     start_ts_hidden = gr.Textbox(value="", visible=False)
 
-    # Wiring
-    start_btn.click(start_interview, inputs=[name_box, email_box],
+    # ------------------ Wiring ------------------
+    start_btn.click(fn=start_interview, inputs=[name_box, email_box],
                     outputs=[avatar, question_label, feedback_label,
                              start_ts_hidden, submit_btn,
-                             next_btn, submit_test_btn, mic_record, cam_record])
+                             next_btn, submit_test_btn, cam_record])
 
-    submit_btn.click(submit_answer, inputs=[answer_input],
+    submit_btn.click(fn=submit_answer, inputs=[answer_input],
                      outputs=[avatar, question_label, feedback_label,
                               start_ts_hidden, submit_btn,
-                              next_btn, submit_test_btn, mic_record, cam_record])
+                              next_btn, submit_test_btn, cam_record])
 
-    next_btn.click(next_question, inputs=[answer_input],
+    next_btn.click(fn=next_question, inputs=[answer_input],
                     outputs=[avatar, question_label, feedback_label,
                              start_ts_hidden, submit_btn,
-                             next_btn, submit_test_btn, mic_record, cam_record])
+                             next_btn, submit_test_btn, cam_record])
 
-    submit_test_btn.click(submit_test, inputs=[],
+    submit_test_btn.click(fn=submit_test, inputs=[],
                           outputs=[avatar, question_label, feedback_label,
                                    start_ts_hidden, submit_btn,
-                                   next_btn, submit_test_btn, mic_record, cam_record])
+                                   next_btn, submit_test_btn, cam_record])
 
-    # Timer runs every second
+    # Timer updates every 1 second
     gr.Timer(1).tick(fn=get_timer_html, outputs=[timer_html])
 
 demo.launch()

@@ -1,2 +1,12 @@
 question,user_answer,expected,score,feedback,candidate_name,candidate_email
 What formula calculates the average of a range?,No Answer,AVERAGE,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+What function is used to sum a range of cells in Excel?,No Answer,SUM,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+How do you create a chart in Excel?,No Answer,Insert > Chart,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+What formula concatenates text from multiple cells?,No Answer,CONCAT or CONCATENATE,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+How do you apply conditional formatting?,No Answer,Home > Conditional Formatting,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+How do you insert a hyperlink?,aihxiuhbX,Insert > Hyperlink,0,Wrong. Correct answer: Insert > Hyperlink,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+Which function finds the smallest value in a range?,aihxiuhbX,MIN,0,Wrong. Correct answer: MIN,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+What formula concatenates text from multiple cells?,aihxiuhbX,CONCAT or CONCATENATE,0,Wrong. Correct answer: CONCAT or CONCATENATE,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+What shortcut is used to copy selected cells?,aihxiuhbX,Ctrl+C,0,Wrong. Correct answer: Ctrl+C,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+What is the shortcut for undo?,aihxiuhbX,Ctrl+Z,0,Wrong. Correct answer: Ctrl+Z,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+How do you create a chart in Excel?,aihxiuhbX,Insert > Chart,0,Wrong. Correct answer: Insert > Chart,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
