@@ -15,3 +15,6 @@ How do you freeze the top row in Excel?,aihxiuhbX,View > Freeze Panes > Freeze T
 What shortcut is used to copy selected cells?,ctrl+c,Ctrl+C,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,2,FAIL
 What is the shortcut for undo?,ctrl+z,Ctrl+Z,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,2,FAIL
 What is the shortcut to find data in Excel?,ctrl+f,Ctrl+F,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,1,FAIL
+How do you sort data in ascending order?,aihxiuhbX,Data > Sort A-Z,0,Wrong. Correct answer: Data > Sort A-Z,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+What function is used to sum a range of cells in Excel?,aihxiuhbX,SUM,0,Wrong. Correct answer: SUM,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+How do you freeze the top row in Excel?,aihxiuhbX,View > Freeze Panes > Freeze Top Row,0,Wrong. Correct answer: View > Freeze Panes > Freeze Top Row,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL

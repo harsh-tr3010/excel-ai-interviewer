@@ -46,18 +46,16 @@ class ExcelInterviewAgent:
         else:
             raw_result = self.evaluator.evaluate(answer, str(expected))
             user_answer = answer
-            # Threshold logic
             if raw_result["score"] < 50:
                 result = {"score": 0, "feedback": f"Wrong. Correct answer: {expected}"}
             else:
                 result = {"score": 1, "feedback": "Correct"}
 
-        # Store answer record
         self.answers.append({
             "question": self.current_question["Question"],
             "user_answer": user_answer,
             "expected": expected,
-            "score": result["score"],  # 1 = correct, 0 = wrong
+            "score": result["score"],
             "feedback": result["feedback"]
         })
 
@@ -85,20 +83,17 @@ class ExcelInterviewAgent:
 
     def save_results_to_csv(self, candidate_name=None, candidate_email=None):
         os.makedirs("results", exist_ok=True)
-
-        # ------------------ Check for duplicate email ------------------
         master_file = "results/all_results.csv"
+
+        # Prevent duplicate emails
         if os.path.exists(master_file):
             master_df = pd.read_csv(master_file)
             if candidate_email in master_df["candidate_email"].values:
-                # Reject saving if email already exists
                 raise ValueError(f"Email '{candidate_email}' already exists! Cannot save results.")
 
-        # Calculate final result
         total_correct = sum(a["score"] for a in self.answers)
         result_status = "PASS" if total_correct >= 15 else "FAIL"
 
-        # Save individual file
         filename = f"results/{candidate_name or 'candidate'}_results.csv"
         df = pd.DataFrame(self.answers)
         df["candidate_name"] = candidate_name

@@ -24,17 +24,6 @@ The test has **20 questions**, **5 minutes limit**, and **surveillance enabled**
 📢 **You must also spell out your answer aloud while typing it.**  
 """
 
-# ------------------ Utility ------------------
-def email_exists(email):
-    master_file = "results/all_results.csv"
-    if os.path.exists(master_file):
-        try:
-            df = pd.read_csv(master_file)
-            return email in df["candidate_email"].values
-        except Exception:
-            return False
-    return False
-
 # ------------------ Timer ------------------
 def get_timer_html():
     global test_started
@@ -60,11 +49,19 @@ def save_cam_recording(video_file):
 # ------------------ Interview Logic ------------------
 def start_interview(name, email, video_file):
     global candidate_name, candidate_email, test_started, start_time
+
     if not name or not email:
         return [avatar_img, "⚠️ Enter full name & email.", "", None, None] + [gr.update(interactive=False)]*3
 
-    if email_exists(email):
-        return [avatar_img, f"⚠️ Email '{email}' already used for test!", "", None, None] + [gr.update(interactive=False)]*3
+    # Check if email already exists
+    master_file = "results/all_results.csv"
+    if os.path.exists(master_file):
+        try:
+            df = pd.read_csv(master_file)
+            if email in df["candidate_email"].values:
+                return [avatar_img, f"⚠️ Email '{email}' already used for test!", "", None, None] + [gr.update(interactive=False)]*3
+        except Exception:
+            pass
 
     candidate_name, candidate_email = name, email
     q = agent.start_test()
