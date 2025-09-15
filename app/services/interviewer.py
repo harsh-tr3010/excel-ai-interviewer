@@ -1,19 +1,22 @@
 import pandas as pd
+import os
 from app.evaluation.excel_eval import ExcelEvaluator
 
 class ExcelInterviewAgent:
-    def __init__(self, question_file="data/excel_questions.xlsx", max_questions=20):
-        self.questions = pd.read_excel(question_file)
-        self.questions.columns = [c.strip() for c in self.questions.columns]
-        required_cols = ['Question', 'ExpectedAnswer']
-        for col in required_cols:
-            if col not in self.questions.columns:
-                raise ValueError(f"Missing required column in Excel file: '{col}'")
+    def __init__(self, question_file="data/excel_questions.csv", max_questions=20):
+        self.questions = pd.read_csv(question_file)
         self.current_question = None
         self.evaluator = ExcelEvaluator()
         self.asked = []
-        self.answers = []
+        self.answers = []  # store user answers
         self.max_questions = max_questions
+
+    def start_test(self):
+        """Reset state and start test from first question."""
+        self.current_question = None
+        self.asked = []
+        self.answers = []
+        return self.get_next_question()
 
     def get_next_question(self):
         if len(self.asked) >= self.max_questions:
@@ -30,46 +33,77 @@ class ExcelInterviewAgent:
         self.asked.append(q.name)
         return f"Question {len(self.asked)}/{self.max_questions}: {q['Question']}"
 
-    def submit_answer_and_next(self, answer: str):
+    def evaluate_and_store(self, answer: str):
+        """Evaluate and store answer as Correct/Wrong based on threshold (50)."""
         if self.current_question is None:
-            return {"error": "No active question. Either test not started or completed."}
+            return {"error": "No active question."}
 
-        expected = str(self.current_question.get("ExpectedAnswer", "")).strip()
+        expected = self.current_question["ExpectedAnswer"]
+
         if not answer or str(answer).strip() == "":
-            result = {"score": 0, "feedback": "No answer provided. Marked as wrong."}
+            result = {"score": 0, "feedback": "No answer provided. Marked as Wrong."}
             user_answer = "No Answer"
         else:
-            result = self.evaluator.evaluate(answer, expected)
+            raw_result = self.evaluator.evaluate(answer, str(expected))
             user_answer = answer
-            if result["score"] == 0:
-                result["feedback"] = f"Wrong answer. Correct answer: {expected}"
+            # Threshold logic
+            if raw_result["score"] < 50:
+                result = {"score": 0, "feedback": f"Wrong. Correct answer: {expected}"}
+            else:
+                result = {"score": 1, "feedback": "Correct"}
 
+        # Store answer record
         self.answers.append({
             "question": self.current_question["Question"],
             "user_answer": user_answer,
-            "score": result["score"],
+            "expected": expected,
+            "score": result["score"],  # 1 = correct, 0 = wrong
             "feedback": result["feedback"]
         })
 
-        # Get next question automatically
         next_q = self.get_next_question()
         return {"result": result, "next_question": next_q}
 
     def generate_summary(self, candidate_name=None, candidate_email=None):
-        if len(self.answers) < self.max_questions:
-            return f"Test not completed yet. Questions answered: {len(self.answers)}/{self.max_questions}"
-
-        total_score = sum(a["score"] for a in self.answers)
-        avg_score = round(total_score / len(self.answers), 2)
+        total_correct = sum(a["score"] for a in self.answers)
+        result_status = "PASS" if total_correct >= 15 else "FAIL"
 
         summary = "Interview Summary:\n"
         if candidate_name and candidate_email:
             summary += f"Candidate: {candidate_name} ({candidate_email})\n"
-        summary += f"Total Questions Asked: {len(self.answers)}/{self.max_questions}\n"
-        summary += f"Average Score: {avg_score}\n\nDetails:\n"
+        summary += f"Total Questions Answered: {len(self.answers)}/{self.max_questions}\n"
+        summary += f"Correct Answers: {total_correct}\n"
+        summary += f"Final Result: {result_status} ({total_correct}/{self.max_questions})\n\nDetails:\n"
 
         for a in self.answers:
             summary += f"Q: {a['question']}\nYour Answer: {a['user_answer']}\n"
-            summary += f"Score: {a['score']} | {a['feedback']}\n\n"
+            summary += f"Expected: {a['expected']}\n"
+            summary += f"Result: {'Correct' if a['score']==1 else 'Wrong'}\n"
+            summary += f"Feedback: {a['feedback']}\n\n"
 
         return summary
+
+    def save_results_to_csv(self, candidate_name=None, candidate_email=None):
+        os.makedirs("results", exist_ok=True)
+
+        # Calculate final result
+        total_correct = sum(a["score"] for a in self.answers)
+        result_status = "PASS" if total_correct >= 15 else "FAIL"
+
+        # Save individual file
+        filename = f"results/{candidate_name or 'candidate'}_results.csv"
+        df = pd.DataFrame(self.answers)
+        df["candidate_name"] = candidate_name
+        df["candidate_email"] = candidate_email
+        df["total_correct"] = total_correct
+        df["final_result"] = result_status
+        df.to_csv(filename, index=False)
+
+        # Append to master file
+        master_file = "results/all_results.csv"
+        if os.path.exists(master_file):
+            df.to_csv(master_file, mode="a", header=False, index=False)
+        else:
+            df.to_csv(master_file, index=False)
+
+        return filename, master_file

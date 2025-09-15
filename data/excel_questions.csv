@@ -1,0 +1,21 @@
+Question,ExpectedAnswer
+What function is used to sum a range of cells in Excel?,SUM
+How do you freeze the top row in Excel?,View > Freeze Panes > Freeze Top Row
+What shortcut is used to copy selected cells?,Ctrl+C
+Which function counts the number of non-empty cells?,COUNTA
+What is the shortcut to paste values only?,Ctrl+Alt+V
+How do you create a chart in Excel?,Insert > Chart
+What formula calculates the average of a range?,AVERAGE
+Which function finds the largest value in a range?,MAX
+Which function finds the smallest value in a range?,MIN
+What does VLOOKUP do?,Searches for a value in the first column of a range and returns a value in the same row from another column
+How do you insert a new worksheet?,Right-click on sheet tab > Insert
+What is the shortcut for undo?,Ctrl+Z
+How do you sort data in ascending order?,Data > Sort A-Z
+How do you apply conditional formatting?,Home > Conditional Formatting
+What formula concatenates text from multiple cells?,CONCAT or CONCATENATE
+Which function rounds a number to the nearest integer?,ROUND
+What is the shortcut to find data in Excel?,Ctrl+F
+How do you remove duplicates from a dataset?,Data > Remove Duplicates
+Which function returns the current date?,TODAY
+How do you insert a hyperlink?,Insert > Hyperlink

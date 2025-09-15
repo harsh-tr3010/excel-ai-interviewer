@@ -1,0 +1,2 @@
+question,user_answer,expected,score,feedback,candidate_name,candidate_email,total_correct,final_result
+What formula calculates the average of a range?,No Answer,AVERAGE,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL

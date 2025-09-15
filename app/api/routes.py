@@ -1,38 +1,54 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.services.interviewer import ExcelInterviewAgent
-from pydantic import BaseModel
+import pandas as pd
+import os
 
 router = APIRouter()
-agent = ExcelInterviewAgent(max_questions=20)
+agent = ExcelInterviewAgent()
 
-class AnswerRequest(BaseModel):
-    answer: str
+RESULTS_FILE = "results/all_results.csv"
 
-# Get the next question
+
+@router.post("/start")
+def start_test(candidate_name: str, candidate_email: str):
+    # Prevent duplicate email attempts
+    if os.path.exists(RESULTS_FILE):
+        df = pd.read_csv(RESULTS_FILE)
+        if candidate_email in df["candidate_email"].values:
+            raise HTTPException(
+                status_code=400,
+                detail=f"❌ Candidate with email {candidate_email} has already taken the test."
+            )
+
+    q = agent.start_test()
+    return {"message": f"Welcome {candidate_name}!", "question": q}
+
+
 @router.get("/question")
 def get_question():
-    q = agent.submit_answer_and_next(answer=None)  # Starts next question or first if none submitted
-    if q is None:
-        return {"question": "✅ Test Completed! Click /submit_test for final summary."}
+    q = agent.get_next_question()
     return {"question": q}
 
-# Submit answer & automatically move to next question
-@router.post("/answer")
-def post_answer(request: AnswerRequest):
-    next_q = agent.submit_answer_and_next(request.answer)
-    if next_q is None:
-        next_q = "✅ Test Completed! Click /submit_test for final summary."
-    return {
-        "next_question": next_q,
-        "message": "Answer recorded."
-    }
 
-# Submit test & get final summary
-@router.get("/submit_test")
-def submit_test():
-    summary = agent.generate_summary()
-    status = "✅ Test Submitted"
+@router.post("/answer")
+def post_answer(answer: str):
+    return agent.evaluate_and_store(answer)
+
+
+@router.post("/submit")
+def submit_test(candidate_name: str, candidate_email: str):
+    summary = agent.generate_summary(candidate_name, candidate_email)
+    file_path, master_file = agent.save_results_to_csv(candidate_name, candidate_email)
+
+    # Extract pass/fail status
+    df = pd.read_csv(file_path)
+    final_result = df["final_result"].iloc[0]
+    final_score = df["final_score"].iloc[0]
+
     return {
-        "status": status,
-        "summary": summary
+        "summary": summary,
+        "final_result": final_result,
+        "final_score": final_score,
+        "file_saved": file_path,
+        "master_file": master_file
     }
