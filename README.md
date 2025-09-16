@@ -1,3 +1,9 @@
+---
+title: Harsh8308Excel-interview
+app_file: app/gui.py
+sdk: gradio
+sdk_version: 5.45.0
+---
 **AI Excel Mock Interviewer**
 
 An AI-powered Excel interview platform with FastAPI backend and Gradio frontend, featuring webcam recording, TTS instructions, and automated question evaluation.
