@@ -18,3 +18,17 @@ What is the shortcut to find data in Excel?,ctrl+f,Ctrl+F,1,Correct,Harsh Tripat
 How do you sort data in ascending order?,aihxiuhbX,Data > Sort A-Z,0,Wrong. Correct answer: Data > Sort A-Z,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
 What function is used to sum a range of cells in Excel?,aihxiuhbX,SUM,0,Wrong. Correct answer: SUM,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
 How do you freeze the top row in Excel?,aihxiuhbX,View > Freeze Panes > Freeze Top Row,0,Wrong. Correct answer: View > Freeze Panes > Freeze Top Row,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+How do you apply conditional formatting?,No Answer,Home > Conditional Formatting,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
+What formula calculates the average of a range?,No Answer,AVERAGE,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
+How do you freeze the top row in Excel?,No Answer,View > Freeze Panes > Freeze Top Row,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
+Which function counts the number of non-empty cells?,No Answer,COUNTA,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
+What does VLOOKUP do?,No Answer,Searches for a value in the first column of a range and returns a value in the same row from another column,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
+What shortcut is used to copy selected cells?,No Answer,Ctrl+C,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
+Which function counts the number of non-empty cells?,aihxiuhbX,COUNTA,0,Wrong. Correct answer: COUNTA,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+How do you apply conditional formatting?,aihxiuhbX,Home > Conditional Formatting,0,Wrong. Correct answer: Home > Conditional Formatting,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+Which function counts the number of non-empty cells?,aihxiuhbX,COUNTA,0,Wrong. Correct answer: COUNTA,Harsh Tripathi,harsht@gmail.com,1,FAIL
+What is the shortcut for undo?,aihxiuhbX,Ctrl+Z,0,Wrong. Correct answer: Ctrl+Z,Harsh Tripathi,harsht@gmail.com,1,FAIL
+What shortcut is used to copy selected cells?,aihxiuhbX,Ctrl+C,0,Wrong. Correct answer: Ctrl+C,Harsh Tripathi,harsht@gmail.com,1,FAIL
+Which function finds the smallest value in a range?,min,MIN,1,Correct,Harsh Tripathi,harsht@gmail.com,1,FAIL
+How do you remove duplicates from a dataset?,aihxiuhbX,Data > Remove Duplicates,0,Wrong. Correct answer: Data > Remove Duplicates,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
+What formula concatenates text from multiple cells?,aihxiuhbX,CONCAT or CONCATENATE,0,Wrong. Correct answer: CONCAT or CONCATENATE,Harsh Tripathi,803@gmail.com,0,FAIL
