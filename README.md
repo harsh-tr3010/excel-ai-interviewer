@@ -34,24 +34,24 @@ pip install -r requirements.txt
 
 **Dependencies Used:**
 
-**Library	Purpose**
-**fastapi**	Backend API server to handle requests and responses.
 
-**uvicorn**	ASGI server to run FastAPI locally.
+**fastapi**	- Backend API server to handle requests and responses.
 
-**gradio**	Frontend interface for interactive interview and webcam integration.
+**uvicorn**	- ASGI server to run FastAPI locally.
 
-**pandas**	Handle question CSVs, results CSVs, and data manipulation.
+**gradio** - Frontend interface for interactive interview and webcam integration.
 
-**Pillow** (PIL)	Handle and resize interviewer avatar images.
+**pandas**	- Handle question CSVs, results CSVs, and data manipulation.
 
-**gtts**	Convert text instructions/questions to speech (TTS).
+**Pillow** (PIL)	- Handle and resize interviewer avatar images.
 
-**shutil**	Handle file saving/moving for recordings.
+**gtts**	- Convert text instructions/questions to speech (TTS).
 
-**glob**	Delete temporary TTS files automatically.
+**shutil**	- Handle file saving/moving for recordings.
 
-**os & time**	Manage file paths, directories, and timestamps.
+**glob**	- Delete temporary TTS files automatically.
+
+**os & time**	- Manage file paths, directories, and timestamps.
 
 
 4. Prepare Data
