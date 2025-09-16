@@ -4,6 +4,7 @@ from PIL import Image
 import os, time, shutil
 from gtts import gTTS
 import pandas as pd
+import glob
 
 # ------------------ Initialization ------------------
 agent = ExcelInterviewAgent(max_questions=20)
@@ -19,6 +20,21 @@ TIME_LIMIT = 300  # 5 minutes
 
 os.makedirs("recordings", exist_ok=True)
 
+# ------------------ Helper to create TTS ------------------
+def make_tts(text: str, prefix="temp"):
+    """Generate TTS mp3 file, delete old temp TTS files, and return new path."""
+    # cleanup old temp files
+    for old in glob.glob("recordings/temp_*.mp3"):
+        try:
+            os.remove(old)
+        except:
+            pass
+
+    path = f"recordings/{prefix}_{int(time.time())}.mp3"
+    tts = gTTS(text)
+    tts.save(path)
+    return path
+
 # ------------------ Instructions TTS ------------------
 instructions_text = """
 📢 Welcome to the AI Excel Mock Interview!  
@@ -27,10 +43,7 @@ Your video will be **recorded** for review purposes.
 Before submitting your test, **turn OFF the video recording**.  
 Good luck!
 """
-instructions_tts_path = "recordings/instructions.mp3"
-if not os.path.exists(instructions_tts_path):
-    tts = gTTS(instructions_text)
-    tts.save(instructions_tts_path)
+instructions_tts_path = make_tts(instructions_text, prefix="instructions")
 
 # ------------------ Timer ------------------
 def get_timer_html():
@@ -47,6 +60,7 @@ def get_timer_html():
 
 # ------------------ Recording Save ------------------
 def save_cam_recording(video_file):
+    """Save uploaded webcam video into recordings/ only."""
     if video_file and candidate_email:
         ext = os.path.splitext(video_file)[-1] or ".mp4"
         dest = f"recordings/{candidate_email}_cam_{int(time.time())}{ext}"
@@ -76,10 +90,7 @@ def start_interview(name, email, video_file):
 
     save_cam_recording(video_file)
 
-    tts_path = f"recordings/temp_{int(time.time())}.mp3"
-    tts = gTTS(q)
-    tts.save(tts_path)
-
+    tts_path = make_tts(q, prefix="question")
     return [
         avatar_img,
         f"Welcome {name}! Let's begin.\n\n{q}",
@@ -108,9 +119,7 @@ def submit_answer(answer):
     next_q = result.get("next_question")
 
     if next_q:
-        tts_path = f"recordings/temp_{int(time.time())}.mp3"
-        tts = gTTS(next_q)
-        tts.save(tts_path)
+        tts_path = make_tts(next_q, prefix="question")
         return [
             avatar_img,
             next_q,
@@ -176,7 +185,7 @@ with gr.Blocks() as demo:
                 autoplay=True,
                 interactive=False,
                 visible=True,
-                label="📢 Instructions (Autoplay)"
+                label="📢 Instructions & Questions (Autoplay)"
             )
         with gr.Column(scale=1):
             cam_record = gr.Video(label="Webcam", height=200, interactive=True)
