@@ -2,13 +2,14 @@ import pandas as pd
 import os
 from app.evaluation.excel_eval import ExcelEvaluator
 
+
 class ExcelInterviewAgent:
     def __init__(self, question_file="data/excel_questions.csv", max_questions=20):
         self.questions = pd.read_csv(question_file)
         self.current_question = None
         self.evaluator = ExcelEvaluator()
         self.asked = []
-        self.answers = []  # store user answers
+        self.answers = []
         self.max_questions = max_questions
 
     def start_test(self):
@@ -85,16 +86,29 @@ class ExcelInterviewAgent:
         os.makedirs("results", exist_ok=True)
         master_file = "results/all_results.csv"
 
-        # Prevent duplicate emails
+        # 🚨 Fix: If file exists but is empty/corrupted → delete it
         if os.path.exists(master_file):
-            master_df = pd.read_csv(master_file)
-            if candidate_email in master_df["candidate_email"].values:
-                raise ValueError(f"Email '{candidate_email}' already exists! Cannot save results.")
+            if os.path.getsize(master_file) == 0:
+                os.remove(master_file)
+            else:
+                try:
+                    master_df = pd.read_csv(master_file)
+                except Exception:
+                    os.remove(master_file)
+                    master_df = None
+                else:
+                    # Strict check for duplicate emails
+                    if candidate_email and candidate_email.lower() in master_df["candidate_email"].astype(str).str.lower().values:
+                        raise ValueError(
+                            f"Email '{candidate_email}' already exists! "
+                            "This candidate has already attempted the test."
+                        )
 
         total_correct = sum(a["score"] for a in self.answers)
         result_status = "PASS" if total_correct >= 15 else "FAIL"
 
-        filename = f"results/{candidate_name or 'candidate'}_results.csv"
+        # Save candidate-specific file
+        filename = f"results/{(candidate_name or 'candidate').replace(' ', '_')}_results.csv"
         df = pd.DataFrame(self.answers)
         df["candidate_name"] = candidate_name
         df["candidate_email"] = candidate_email
@@ -102,10 +116,8 @@ class ExcelInterviewAgent:
         df["final_result"] = result_status
         df.to_csv(filename, index=False)
 
-        # Append to master file
-        if os.path.exists(master_file):
-            df.to_csv(master_file, mode="a", header=False, index=False)
-        else:
-            df.to_csv(master_file, index=False)
+        # Append to master file (add header if file was deleted or new)
+        write_header = not os.path.exists(master_file)
+        df.to_csv(master_file, mode="a", header=write_header, index=False)
 
         return filename, master_file

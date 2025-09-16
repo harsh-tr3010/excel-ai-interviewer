@@ -1,2 +1,0 @@
-question,user_answer,expected,score,feedback,candidate_name,candidate_email,total_correct,final_result
-What formula concatenates text from multiple cells?,aihxiuhbX,CONCAT or CONCATENATE,0,Wrong. Correct answer: CONCAT or CONCATENATE,Harsh Tripathi,803@gmail.com,0,FAIL

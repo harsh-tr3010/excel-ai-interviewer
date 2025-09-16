@@ -1,34 +1,8 @@
-question,user_answer,expected,score,feedback,candidate_name,candidate_email
-What formula calculates the average of a range?,No Answer,AVERAGE,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What function is used to sum a range of cells in Excel?,No Answer,SUM,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-How do you create a chart in Excel?,No Answer,Insert > Chart,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What formula concatenates text from multiple cells?,No Answer,CONCAT or CONCATENATE,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-How do you apply conditional formatting?,No Answer,Home > Conditional Formatting,0,No answer provided. Marked as Wrong.,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-How do you insert a hyperlink?,aihxiuhbX,Insert > Hyperlink,0,Wrong. Correct answer: Insert > Hyperlink,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-Which function finds the smallest value in a range?,aihxiuhbX,MIN,0,Wrong. Correct answer: MIN,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What formula concatenates text from multiple cells?,aihxiuhbX,CONCAT or CONCATENATE,0,Wrong. Correct answer: CONCAT or CONCATENATE,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What shortcut is used to copy selected cells?,aihxiuhbX,Ctrl+C,0,Wrong. Correct answer: Ctrl+C,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What is the shortcut for undo?,aihxiuhbX,Ctrl+Z,0,Wrong. Correct answer: Ctrl+Z,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-How do you create a chart in Excel?,aihxiuhbX,Insert > Chart,0,Wrong. Correct answer: Insert > Chart,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-Which function rounds a number to the nearest integer?,aihxiuhbX,ROUND,0,Wrong. Correct answer: ROUND,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-How do you freeze the top row in Excel?,aihxiuhbX,View > Freeze Panes > Freeze Top Row,0,Wrong. Correct answer: View > Freeze Panes > Freeze Top Row,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What shortcut is used to copy selected cells?,ctrl+c,Ctrl+C,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,2,FAIL
+question,user_answer,expected,score,feedback,candidate_name,candidate_email,total_correct,final_result
 What is the shortcut for undo?,ctrl+z,Ctrl+Z,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,2,FAIL
-What is the shortcut to find data in Excel?,ctrl+f,Ctrl+F,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,1,FAIL
-How do you sort data in ascending order?,aihxiuhbX,Data > Sort A-Z,0,Wrong. Correct answer: Data > Sort A-Z,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What function is used to sum a range of cells in Excel?,aihxiuhbX,SUM,0,Wrong. Correct answer: SUM,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-How do you freeze the top row in Excel?,aihxiuhbX,View > Freeze Panes > Freeze Top Row,0,Wrong. Correct answer: View > Freeze Panes > Freeze Top Row,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-How do you apply conditional formatting?,No Answer,Home > Conditional Formatting,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
-What formula calculates the average of a range?,No Answer,AVERAGE,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
-How do you freeze the top row in Excel?,No Answer,View > Freeze Panes > Freeze Top Row,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
-Which function counts the number of non-empty cells?,No Answer,COUNTA,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
-What does VLOOKUP do?,No Answer,Searches for a value in the first column of a range and returns a value in the same row from another column,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
-What shortcut is used to copy selected cells?,No Answer,Ctrl+C,0,No answer provided. Marked as Wrong.,saloni,salonimohnani02@gmail.com,0,FAIL
-Which function counts the number of non-empty cells?,aihxiuhbX,COUNTA,0,Wrong. Correct answer: COUNTA,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-How do you apply conditional formatting?,aihxiuhbX,Home > Conditional Formatting,0,Wrong. Correct answer: Home > Conditional Formatting,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-Which function counts the number of non-empty cells?,aihxiuhbX,COUNTA,0,Wrong. Correct answer: COUNTA,Harsh Tripathi,harsht@gmail.com,1,FAIL
-What is the shortcut for undo?,aihxiuhbX,Ctrl+Z,0,Wrong. Correct answer: Ctrl+Z,Harsh Tripathi,harsht@gmail.com,1,FAIL
-What shortcut is used to copy selected cells?,aihxiuhbX,Ctrl+C,0,Wrong. Correct answer: Ctrl+C,Harsh Tripathi,harsht@gmail.com,1,FAIL
-Which function finds the smallest value in a range?,min,MIN,1,Correct,Harsh Tripathi,harsht@gmail.com,1,FAIL
-How do you remove duplicates from a dataset?,aihxiuhbX,Data > Remove Duplicates,0,Wrong. Correct answer: Data > Remove Duplicates,Harsh Tripathi,harshtripathi803@gmail.com,0,FAIL
-What formula concatenates text from multiple cells?,aihxiuhbX,CONCAT or CONCATENATE,0,Wrong. Correct answer: CONCAT or CONCATENATE,Harsh Tripathi,803@gmail.com,0,FAIL
+What is the shortcut to paste values only?,ctrl+v,Ctrl+Alt+V,1,Correct,Harsh Tripathi,harshtripathi803@gmail.com,2,FAIL
+How do you remove duplicates from a dataset?,aihxiuhbX,Data > Remove Duplicates,0,Wrong. Correct answer: Data > Remove Duplicates,Harsh Tripathi,harshtripathi@gmail.com,0,FAIL
+How do you apply conditional formatting?,aihxiuhbX,Home > Conditional Formatting,0,Wrong. Correct answer: Home > Conditional Formatting,Harsh Tripathi,harshtripathi@gmail.com,0,FAIL
+Which function counts the number of non-empty cells?,aihxiuhbX,COUNTA,0,Wrong. Correct answer: COUNTA,Harsh Tripathi,harsh@gmail.com,0,FAIL
+Which function returns the current date?,aihxiuhbX,TODAY,0,Wrong. Correct answer: TODAY,Harsh Tripathi,harsh@gmail.com,0,FAIL
+How do you apply conditional formatting?,aihxiuhbX,Home > Conditional Formatting,0,Wrong. Correct answer: Home > Conditional Formatting,Harsh Tripathi,harsh@gmail.com,0,FAIL

@@ -22,14 +22,11 @@ os.makedirs("recordings", exist_ok=True)
 
 # ------------------ Helper to create TTS ------------------
 def make_tts(text: str, prefix="temp"):
-    """Generate TTS mp3 file, delete old temp TTS files, and return new path."""
-    # cleanup old temp files
     for old in glob.glob("recordings/temp_*.mp3"):
         try:
             os.remove(old)
         except:
             pass
-
     path = f"recordings/{prefix}_{int(time.time())}.mp3"
     tts = gTTS(text)
     tts.save(path)
@@ -37,10 +34,10 @@ def make_tts(text: str, prefix="temp"):
 
 # ------------------ Instructions TTS ------------------
 instructions_text = """
-📢 Welcome to the AI Excel Mock Interview!  
-Please **turn ON your webcam** before starting the test.  
-Your video will be **recorded** for review purposes.  
-Before submitting your test, **turn OFF the video recording**.  
+Welcome to the AI Excel Mock Interview!  
+Please allow camera access when prompted.  
+Your video will start recording automatically.  
+Recording will stop when you submit your test.  
 Good luck!
 """
 instructions_tts_path = make_tts(instructions_text, prefix="instructions")
@@ -53,8 +50,7 @@ def get_timer_html():
     elapsed = time.time() - start_time
     remaining = max(0, TIME_LIMIT - int(elapsed))
     if remaining <= 0 and test_started:
-        submit_test()
-        return "<b>⏰ Time is up! Test auto-submitted.</b>"
+        return auto_submit()
     minutes, seconds = divmod(remaining, 60)
     return f"<b>Timer: {minutes:02d}:{seconds:02d} ⏱</b>"
 
@@ -64,7 +60,10 @@ def save_cam_recording(video_file):
     if video_file and candidate_email:
         ext = os.path.splitext(video_file)[-1] or ".mp4"
         dest = f"recordings/{candidate_email}_cam_{int(time.time())}{ext}"
-        shutil.copy(video_file, dest)
+        try:
+            shutil.copy(video_file, dest)
+        except Exception:
+            shutil.move(video_file, dest)
         return f"📹 Camera saved: {dest}"
     return "⚠️ No webcam recording."
 
@@ -72,14 +71,18 @@ def save_cam_recording(video_file):
 def start_interview(name, email, video_file):
     global candidate_name, candidate_email, test_started, start_time
     if not name or not email:
-        return [avatar_img, "⚠️ Enter full name & email.", instructions_text, instructions_tts_path] + [gr.update(interactive=False)]*3
+        return [avatar_img, "⚠️ Enter full name & email.", instructions_text, instructions_tts_path,
+                gr.update(value="⚠️ Enter details before starting", interactive=False),
+                gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)]
 
     master_file = "results/all_results.csv"
     if os.path.exists(master_file):
         try:
             df = pd.read_csv(master_file)
-            if "candidate_email" in df.columns and email in df["candidate_email"].values:
-                return [avatar_img, f"⚠️ Email '{email}' already used for test!", instructions_text, instructions_tts_path] + [gr.update(interactive=False)]*3
+            if "candidate_email" in df.columns and email.strip().lower() in df["candidate_email"].astype(str).str.lower().values:
+                return [avatar_img, "⚠️ This email has already been used for a test!", instructions_text, instructions_tts_path,
+                        gr.update(value="Duplicate email detected ❌", interactive=False),
+                        gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)]
         except Exception:
             pass
 
@@ -88,12 +91,13 @@ def start_interview(name, email, video_file):
     test_started = True
     start_time = time.time()
 
+    # Auto-save first chunk of recording if available
     save_cam_recording(video_file)
-
     tts_path = make_tts(q, prefix="question")
+
     return [
         avatar_img,
-        f"Welcome {name}! Let's begin.\n\n{q}",
+        q,
         instructions_text,
         tts_path,
         gr.update(interactive=True),
@@ -104,16 +108,19 @@ def start_interview(name, email, video_file):
 
 def submit_answer(answer):
     if not test_started:
-        return [avatar_img, "⚠️ Test not started.", instructions_text, instructions_tts_path] + [gr.update(interactive=False)]*3
+        return [avatar_img, "⚠️ Test not started.", instructions_text, instructions_tts_path,
+                gr.update(value="⚠️ Test not started", interactive=False),
+                gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)]
 
     elapsed = time.time() - (float(start_time) if start_time else 0)
     if elapsed > TIME_LIMIT:
-        summary = finalize_results()
-        return [avatar_img, "⏰ Time up! Auto-submitted.", summary, None] + [gr.update(interactive=False)]*3
+        return auto_submit()
 
     result = agent.evaluate_and_store(answer)
     if "error" in result:
-        return [avatar_img, "⚠️ No active question.", "", None] + [gr.update(interactive=False)]*3
+        return [avatar_img, "⚠️ No active question.", instructions_text, None,
+                gr.update(value="⚠️ No active question", interactive=False),
+                gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)]
 
     feedback = result['result']['feedback']
     next_q = result.get("next_question")
@@ -123,25 +130,13 @@ def submit_answer(answer):
         return [
             avatar_img,
             next_q,
-            f"Your Answer: {answer}\n\nFeedback: {feedback}",
+            instructions_text,
             tts_path,
-            gr.update(interactive=True),
-            gr.update(interactive=True),
-            gr.update(interactive=True),
-            gr.update(interactive=True),
+            gr.update(value=f"Answer: {answer}\n\nFeedback: {feedback}", interactive=True),
+            gr.update(interactive=True), gr.update(interactive=True), gr.update(interactive=True),
         ]
     else:
-        summary = finalize_results()
-        return [
-            avatar_img,
-            "✅ Test Completed!",
-            summary,
-            None,
-            gr.update(interactive=False),
-            gr.update(interactive=False),
-            gr.update(interactive=False),
-            gr.update(interactive=False),
-        ]
+        return auto_submit()
 
 def next_question(answer):
     return submit_answer(answer)
@@ -152,96 +147,81 @@ def finalize_results():
     filename, master_file = agent.save_results_to_csv(candidate_name, candidate_email)
     total_correct = sum(a["score"] for a in agent.answers)
     result_status = "✅ PASS" if total_correct >= 15 else "❌ FAIL"
-    final_summary = f"{summary}\nFinal Result: {result_status} ({total_correct}/20)\n\nSaved: {filename}\nMaster: {master_file}"
+    final_summary = f"{summary}\n\nFinal Result: {result_status} ({total_correct}/20)\nSaved: {filename}\nMaster File: {master_file}"
 
+    # Save the final webcam recording
     save_cam_recording(cam_record.value)
     test_started = False
     return final_summary
 
-def submit_test():
-    save_cam_recording(cam_record.value)  # auto-save on submit
+def auto_submit():
     summary = finalize_results()
-    return [
-        avatar_img,
-        "✅ Test Submitted",
-        summary,
-        None,
-        gr.update(interactive=False),
-        gr.update(interactive=False),
-        gr.update(interactive=False),
-        gr.update(interactive=False),
-    ]
+    return [avatar_img, "⏰ Time Up! Test Auto-Submitted.", instructions_text, None,
+            gr.update(value=summary, interactive=False),
+            gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)]
+
+def submit_test():
+    summary = finalize_results()
+    return [avatar_img, "✅ Test Submitted", instructions_text, None,
+            gr.update(value=summary, interactive=False),
+            gr.update(interactive=False), gr.update(interactive=False), gr.update(interactive=False)]
 
 # ------------------ Build Interface ------------------
 with gr.Blocks() as demo:
     gr.Markdown("## 🤖 AI Excel Mock Interviewer with Webcam & TTS")
 
-    # Top section: Instructions + TTS + Webcam
     with gr.Row():
         with gr.Column(scale=3):
             instructions_label = gr.Markdown(f"**{instructions_text}**")
-            tts_audio = gr.Audio(
-                value=instructions_tts_path,
-                autoplay=True,
-                interactive=False,
-                visible=True,
-                label="📢 Instructions & Questions (Autoplay)"
-            )
+            tts_audio = gr.Audio(value=instructions_tts_path, autoplay=True, interactive=False,
+                                 visible=True, label="📢 Instructions & Questions (Autoplay)")
         with gr.Column(scale=1):
-            cam_record = gr.Video(label="Webcam", height=200, interactive=True)
+            # Enable auto-record from webcam
+            cam_record = gr.Video(label="Webcam (Recording Auto-Starts)", height=200, sources=["webcam"])
 
-    # Name & Email
     with gr.Row():
         name_box = gr.Textbox(label="Full Name")
         email_box = gr.Textbox(label="Email")
 
     start_btn = gr.Button("🎬 Start Test (20 Questions)")
 
-    # Avatar & question
     with gr.Row():
         avatar = gr.Image(avatar_img, interactive=False)
         question_label = gr.Textbox(label="Question", value="Fill details then Start Test", interactive=False)
 
     answer_input = gr.Textbox(label="Your Answer")
 
-    # Buttons
     with gr.Row():
         submit_btn = gr.Button("Submit Answer", interactive=False)
         next_btn = gr.Button("➡️ Next Question", interactive=False)
         submit_test_btn = gr.Button("Submit Test", interactive=False)
 
-    # Feedback & Timer
     with gr.Row():
         feedback_label = gr.Textbox(label="Feedback / Summary", interactive=False, lines=10)
         timer_html = gr.HTML("<b>Timer: 00:00 ⏱</b>")
 
-    # ------------------ Auto-repeat Instructions TTS ------------------
     def repeat_instructions():
         if not test_started:
             return instructions_tts_path
-        return gr.update()  # stop once test starts
+        return gr.update()
 
-    instructions_timer = gr.Timer(20)
-    instructions_timer.tick(fn=repeat_instructions, outputs=[tts_audio])
+    gr.Timer(20).tick(fn=repeat_instructions, outputs=[tts_audio])
+    gr.Timer(1).tick(fn=get_timer_html, outputs=[timer_html])
 
-    # ------------------ Wiring ------------------
     start_btn.click(fn=start_interview, inputs=[name_box, email_box, cam_record],
                     outputs=[avatar, question_label, instructions_label, tts_audio,
-                             submit_btn, next_btn, submit_test_btn, cam_record])
+                             feedback_label, submit_btn, next_btn, submit_test_btn])
 
     submit_btn.click(fn=submit_answer, inputs=[answer_input],
                      outputs=[avatar, question_label, instructions_label, tts_audio,
-                              submit_btn, next_btn, submit_test_btn, cam_record])
+                              feedback_label, submit_btn, next_btn, submit_test_btn])
 
     next_btn.click(fn=next_question, inputs=[answer_input],
                    outputs=[avatar, question_label, instructions_label, tts_audio,
-                            submit_btn, next_btn, submit_test_btn, cam_record])
+                            feedback_label, submit_btn, next_btn, submit_test_btn])
 
     submit_test_btn.click(fn=submit_test, inputs=[],
                           outputs=[avatar, question_label, instructions_label, tts_audio,
-                                   submit_btn, next_btn, submit_test_btn, cam_record])
-
-    # Timer for test countdown
-    gr.Timer(1).tick(fn=get_timer_html, outputs=[timer_html])
+                                   feedback_label, submit_btn, next_btn, submit_test_btn])
 
 demo.launch()
