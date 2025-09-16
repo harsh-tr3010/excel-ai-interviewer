@@ -224,4 +224,4 @@ with gr.Blocks() as demo:
                           outputs=[avatar, question_label, instructions_label, tts_audio,
                                    feedback_label, submit_btn, next_btn, submit_test_btn])
 
-demo.launch()
+demo.launch(share=True)

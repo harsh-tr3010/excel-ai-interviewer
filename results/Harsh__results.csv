@@ -1,0 +1,3 @@
+question,user_answer,expected,score,feedback,candidate_name,candidate_email,total_correct,final_result
+How do you insert a hyperlink?,No Answer,Insert > Hyperlink,0,No answer provided. Marked as Wrong.,Harsh ,tripathiharsh230603@gmail.com,0,FAIL
+How do you apply conditional formatting?,No Answer,Home > Conditional Formatting,0,No answer provided. Marked as Wrong.,Harsh ,tripathiharsh230603@gmail.com,0,FAIL
